@@ -3,9 +3,11 @@
 -- Creates a table containing gungeon run data
 CREATE TABLE run_data (
 	id					INTEGER PRIMARY KEY AUTOINCREMENT,
+	schema				VARCHAR(10) NOT NULL,
 	gungeoneer			VARCHAR(15) NOT NULL,
 	duration			INTEGER NOT NULL,
 	floor				VARCHAR(30) NOT NULL,
+	kills				INTEGER NOT NULL,
 	carried_money		INTEGER NOT NULL,
 	total_money			INTEGER NOT NULL,
 	rainbow				BOOLEAN NOT NULL,
