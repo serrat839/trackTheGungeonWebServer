@@ -26,7 +26,7 @@ app.post("/runEnd", async(req, res) => {
       let db = await getDBConnection();
       let qry = `INSERT INTO run_data (gungeoneer, schema, duration, floor, kills, carried_money, total_money,
         rainbow, blessed, turbo, challenge, passive, active, guns, isVictory) VALUES
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
       await db.run(qry,
         req.body.metadata.gungeoneer,
