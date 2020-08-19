@@ -72,7 +72,8 @@ def scrapeWeapons(url, paths):
         for i, cell in enumerate(row.find_all("td")):
             data = ""
             if i == 0 or i == 3:
-                data = cell.contents[0].contents[0].get("alt", "")
+                temp = cell.contents[0].contents[0].get("alt", "")
+                data = temp.replace(" Quality Item.png", "")
             elif i == 1:
                 data = cell.contents[0].string
             elif i == 15:
@@ -111,7 +112,7 @@ def scrapeItems(url, paths):
                 gungeon_data[header_order[1]].append("Ruby Bracelet")
                 gungeon_data[header_order[2]].append("Passive")
                 gungeon_data[header_order[3]].append("Thrown Guns Explode | Moving Forward")
-                gungeon_data[header_order[4]].append("D Quality Item.png")
+                gungeon_data[header_order[4]].append("D")
                 gungeon_data[header_order[5]].append("Thrown guns will explode. | Thrown guns will explode. Grants immunity to contact damage. Moving constantly without rolling or taking damage for 4 seconds charges a dodge roll, which will deal 300 damage.")
                 skipnext = False
                 break
@@ -120,7 +121,8 @@ def scrapeItems(url, paths):
                 for child in cell.contents:
                     if type(child) == NavigableString:
                         continue
-                    data += child.contents[0].get("alt", "")
+                    temp = child.contents[0].get("alt", "")
+                    data += temp.replace(" Quality Item.png", "")
             elif i == 1:
                 data = cell.contents[0].string
                 if data == "Ruby Bracelet":
@@ -144,6 +146,8 @@ def scrapeItems(url, paths):
 
     return pd.DataFrame(gungeon_data)
 
+
+
 if __name__ == "__main__":
     # stores all the links to the wiki The first center has all we want
     url = "https://enterthegungeon.gamepedia.com/Enter_the_Gungeon_Wiki"
@@ -159,8 +163,93 @@ if __name__ == "__main__":
 
     # Scrape gun data
     gun_data = scrapeWeapons(url, paths)
-    gun_data.to_csv("weapons.csv")
 
     # scrape item data
     item_data = scrapeItems(url, paths)
-    item_data.to_csv("items.csv")
+
+    sqlcommand = '''
+-- Author: Thomas Serrano
+-- Last Updated: 8/8/2020
+-- Creates a table containing gungeon weapon data. For the record, these are all varchars because the website i scraped this info from has text in numerical columns sometimes.
+CREATE TABLE weapons (
+    icon			VARCHAR(255),
+    name			VARCHAR(255),
+    "quote"			VARCHAR(255),
+    quality			VARCHAR(20),
+    type			VARCHAR(20),
+    dps				VARCHAR(10),
+    magazine		VARCHAR(25),
+    ammo_capacity	VARCHAR(20),
+    damage			VARCHAR(36),
+    fire_rate		VARCHAR(10),
+    reload_time		VARCHAR(10),
+    shot_speed		VARCHAR(10),
+    "range"			VARCHAR(10),
+    force			VARCHAR(10),
+    spread			VARCHAR(4),
+    notes			VARCHAR(300)
+); \n
+        '''
+
+    sql_insert = 'INSERT INTO weapons (icon, name, "quote", quality, type, dps, magazine, ammo_capacity, damage,' \
+                 ' fire_rate, reload_time, shot_speed, "range", force, spread, notes) VALUES' \
+                 '("{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}"); \n'
+    for row in gun_data["Icon"]:
+        row = gun_data[gun_data["Icon"] == row]
+
+        sqlcommand += sql_insert.format(
+            row.iloc[0]["Icon"],
+            row.iloc[0]["Name"],
+            row.iloc[0]["Quote"],
+            row.iloc[0]["Quality"],
+            row.iloc[0]["Type"],
+            row.iloc[0]["DPS"],
+            row.iloc[0]["Magazine Size"],
+            row.iloc[0]["Ammo Capacity"],
+            row.iloc[0]["Damage"],
+            row.iloc[0]["Fire Rate"],
+            row.iloc[0]["Reload Time"],
+            row.iloc[0]["Shot Speed"],
+            row.iloc[0]["Range"],
+            row.iloc[0]["Force"],
+            row.iloc[0]["Spread"],
+            row.iloc[0]["Notes"]
+        )
+
+    text_file = open("weapons.sql", "w")
+    text_file.write(sqlcommand)
+    text_file.close()
+
+    # #################################################################################################################
+
+    sqlcommand = '''
+-- Author: Thomas Serrano
+-- Last Updated: 8/8/2020
+-- Creates a table containing gungeon item data. For the record, these are all varchars because the website i scraped this info from has text in numerical columns sometimes.
+CREATE TABLE items (
+    icon			VARCHAR(255),
+    name			VARCHAR(255),
+    type            VARCHAR(20),
+    "quote"         VARCHAR(255),
+    quality         VARCHAR(20),
+    effect          VARCHAR(300)
+); \n
+            '''
+
+    sql_insert = 'INSERT INTO items (icon, name, type, "quote", quality, effect) VALUES' \
+                 '("{}","{}","{}","{}","{}","{}"); \n'
+    for row in item_data["Icon"]:
+        row = item_data[item_data["Icon"] == row]
+
+        sqlcommand += sql_insert.format(
+            row.iloc[0]["Icon"],
+            row.iloc[0]["Name"],
+            row.iloc[0]["Type"],
+            row.iloc[0]["Quote"],
+            row.iloc[0]["Quality"],
+            row.iloc[0]["Effect"]
+        )
+
+    text_file = open("items.sql", "w")
+    text_file.write(sqlcommand)
+    text_file.close()
