@@ -25,7 +25,7 @@ app.post("/runEnd", async(req, res) => {
       // db.all returns stuff
       let db = await getDBConnection();
       let qry = `INSERT INTO run_data (gungeoneer, schema, duration, floor, kills, carried_money, total_money,
-        rainbow, blessed, turbo, challenge, passive, active, guns) VALUES
+        rainbow, blessed, turbo, challenge, passive, active, guns, isVictory) VALUES
         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
       await db.run(qry,
@@ -36,13 +36,14 @@ app.post("/runEnd", async(req, res) => {
         parseInt(req.body.metadata.kills),
         parseInt(req.body.metadata.carried_money),
         parseInt(req.body.metadata.total_money),
-        req.body.metadata.rainbow === "True",
-        req.body.metadata.blessed === "True",
-        req.body.metadata.turbo === "True",
-        req.body.metadata.challenge === "True",
+        req.body.metadata.rainbow.toLowerCase() === "true",
+        req.body.metadata.blessed.toLowerCase() === "true",
+        req.body.metadata.turbo.toLowerCase() === "true",
+        req.body.metadata.challenge.toLowerCase() === "true",
         "[" + req.body.passive.toString() + "]",
         "[" + req.body.active.toString() + "]",
-        "[" + req.body.guns.toString() + "]"
+        "[" + req.body.guns.toString() + "]",
+        req.isVictory.toLowerCase() === "true"
       );
 
       console.log("submitted to db");
@@ -51,7 +52,6 @@ app.post("/runEnd", async(req, res) => {
       res.send("successful interaction with webserver");
     } catch (err) {
       console.log(err);
-      console.log("did not succeed");
       res.status(500).send("Something went wrong")
     }
   } else {
