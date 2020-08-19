@@ -173,7 +173,7 @@ if __name__ == "__main__":
 -- Creates a table containing gungeon weapon data. For the record, these are all varchars because the website i scraped this info from has text in numerical columns sometimes.
 CREATE TABLE weapons (
     icon			VARCHAR(255),
-    name			VARCHAR(255),
+    name			VARCHAR(255) PRIMARY KEY,
     "quote"			VARCHAR(255),
     quality			VARCHAR(20),
     type			VARCHAR(20),
@@ -226,9 +226,14 @@ CREATE TABLE weapons (
 -- Author: Thomas Serrano
 -- Last Updated: 8/8/2020
 -- Creates a table containing gungeon item data. For the record, these are all varchars because the website i scraped this info from has text in numerical columns sometimes.
+-- here icon is primary key since some items are duplicates but the sprites are unique/insinuate diff things
+-- although this is automatically generated, there are some things you will need to change: 
+-- master rounds: change their names to be I - V
+-- Remove duplicate junk
+-- for yellow chamber, change outer " to ' 
 CREATE TABLE items (
     icon			VARCHAR(255),
-    name			VARCHAR(255),
+    name			VARCHAR(255) PRIMARY KEY,
     type            VARCHAR(20),
     "quote"         VARCHAR(255),
     quality         VARCHAR(20),
